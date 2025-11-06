@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Калькулятор экстракции кофе</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b4f4f">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f7f3f0;
+      padding: 2rem;
+      color: #333;
+      max-width: 400px;
+      margin: auto;
+    }
+    label { display: block; margin-top: 1rem; }
+    input { width: 100%; padding: 0.5rem; font-size: 1rem; }
+    button { margin-top: 1rem; padding: 0.5rem 1rem; font-size: 1rem; }
+    .result { margin-top: 1rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Калькулятор экстракции</h1>
+
+  <label>TDS (%)</label>
+  <input type="number" id="tds" step="0.01" placeholder="1.35">
+
+  <label>Вес кофе (г)</label>
+  <input type="number" id="coffee" step="0.1" placeholder="15">
+
+  <label>Вес напитка (г)</label>
+  <input type="number" id="brew" step="0.1" placeholder="250">
+
+  <button onclick="calculate()">Рассчитать</button>
+
+  <div class="result" id="result"></div>
+
+  <script>
+    function calculate() {
+      const tds = parseFloat(document.getElementById('tds').value);
+      const coffee = parseFloat(document.getElementById('coffee').value);
+      const brew = parseFloat(document.getElementById('brew').value);
+
+      if (isNaN(tds) || isNaN(coffee) || isNaN(brew) || coffee === 0) {
+        document.getElementById('result').textContent = 'Введите корректные данные.';
+        return;
+      }
+
+      const ey = (tds * brew) / coffee;
+      document.getElementById('result').textContent = `Extraction Yield: ${ey.toFixed(2)}%`;
+    }
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
+</body>
+</html>
