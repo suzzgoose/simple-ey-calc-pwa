@@ -3,57 +3,166 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Калькулятор экстракции кофе</title>
+  <title>Coffee EY calculator</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b4f4f">
   <style>
+    :root {
+      --bg-color: #f7f3f0;
+      --text-color: #333;
+      --accent-color: #6b4f4f;
+      --scale-height: 16px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #1c1c1e;
+        --text-color: #f5f5f5;
+        --accent-color: #d0a67b;
+      }
+    }
+
     body {
       font-family: system-ui, sans-serif;
-      background: #f7f3f0;
+      background: var(--bg-color);
       padding: 2rem;
-      color: #333;
+      color: var(--text-color);
       max-width: 400px;
       margin: auto;
+      transition: background 0.3s, color 0.3s;
     }
-    label { display: block; margin-top: 1rem; }
-    input { width: 100%; padding: 0.5rem; font-size: 1rem; }
-    button { margin-top: 1rem; padding: 0.5rem 1rem; font-size: 1rem; }
-    .result { margin-top: 1rem; font-weight: bold; }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    button {
+      margin-top: 1.2rem;
+      padding: 0.6rem 1rem;
+      font-size: 1rem;
+      background: var(--accent-color);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .result {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .scale-container {
+      margin-top: 1.5rem;
+    }
+
+    .scale {
+      position: relative;
+      width: 100%;
+      height: var(--scale-height);
+      border-radius: 8px;
+      background: linear-gradient(to right,
+        #e74c3c 0%,     /* недоэкстракция */
+        #e74c3c 17.5%, 
+        #27ae60 18%,   /* начало оптимальной зоны */
+        #27ae60 22%,   /* конец оптимальной зоны */
+        #f1c40f 22.5%, 
+        #f1c40f 100%   /* переэкстракция */
+      );
+    }
+
+    .marker {
+      position: absolute;
+      top: 50%;
+      width: 2px;
+      height: calc(var(--scale-height) + 8px);
+      background: var(--text-color);
+      transform: translate(-50%, -50%);
+      transition: left 0.3s ease;
+    }
+
+    .scale-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      margin-top: 0.2rem;
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>
-  <h1>Калькулятор экстракции</h1>
+  <h1>EY Calc</h1>
 
   <label>TDS (%)</label>
   <input type="number" id="tds" step="0.01" placeholder="1.35">
 
-  <label>Вес кофе (г)</label>
+  <label>Beans weght (gr)</label>
   <input type="number" id="coffee" step="0.1" placeholder="15">
 
-  <label>Вес напитка (г)</label>
+  <label>Bewerage weight (gr)</label>
   <input type="number" id="brew" step="0.1" placeholder="250">
 
-  <button onclick="calculate()">Рассчитать</button>
+  <button onclick="calculate()">Calculate</button>
 
   <div class="result" id="result"></div>
+
+  <div class="scale-container">
+    <div class="scale" id="scale">
+      <div class="marker" id="marker"></div>
+    </div>
+    <div class="scale-labels">
+      <span>0%</span>
+      <span>18%</span>
+      <span>22%</span>
+      <span>30%</span>
+    </div>
+  </div>
 
   <script>
     function calculate() {
       const tds = parseFloat(document.getElementById('tds').value);
       const coffee = parseFloat(document.getElementById('coffee').value);
       const brew = parseFloat(document.getElementById('brew').value);
+      const resultDiv = document.getElementById('result');
+      const marker = document.getElementById('marker');
 
       if (isNaN(tds) || isNaN(coffee) || isNaN(brew) || coffee === 0) {
-        document.getElementById('result').textContent = 'Введите корректные данные.';
+        resultDiv.textContent = 'Invalid data';
         return;
       }
 
       const ey = (tds * brew) / coffee;
-      document.getElementById('result').textContent = `Extraction Yield: ${ey.toFixed(2)}%`;
-    }
-  </script>
+      resultDiv.textContent = `Extraction Yield: ${ey.toFixed(2)}%`;
 
-  <script>
+      // Отобразим значение на шкале (макс 30%)
+      const clampedEY = Math.min(30, Math.max(0, ey));
+      const left = (clampedEY / 30) * 100;
+      marker.style.left = `${left}%`;
+    }
+
+    // Регистрация Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js');
     }
